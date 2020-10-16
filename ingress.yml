@@ -1,0 +1,29 @@
+{{- if .Values.dashboard.ingress.enabled -}}
+{{ $serviceName := printf "%s-dashboard" (include "check.fullname" .) -}}
+apiVersion: 
+kind: Ingress
+metadata:
+  annotations:
+    {{- range $key, $value := .Values.dashboard.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  labels:
+    app.kubernetes.io/name: {{ include "check.name" . }}
+    helm.sh/chart: {{ include "check.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  name: check
+spec:
+  rules:
+  {{- range .Values.dashboard.ingress.hosts }}
+  - host: {{ . }}
+    http:
+      paths:
+      - backend:
+          serviceName: {{ $serviceName }}
+          servicePort: 80
+  {{- end -}}
+{{- if .Values.dashboard.ingress.tls }}
+  tls:
+{{ toYaml .Values.dashboard.ingress.tls | indent 4 }}
+{{- end -}}
+{{- end -}}
